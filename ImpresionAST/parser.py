@@ -263,57 +263,75 @@ class Parser(sly.Parser):
     #        → expr9 → group → factor
     # =========================================================================
 
-    # ── Listas de expresiones ─────────────────────────────────────────────────
-
-    @_('empty')
-    def opt_expr_list(self, p):
-        return []
-
-    @_('expr_list')
-    def opt_expr_list(self, p):
-        return p.expr_list
-
-    @_("expr ',' expr_list")
-    def expr_list(self, p):
-        return [p.expr] + p.expr_list
-
+    # Expresión opcional (puede estar vacía)
     @_('expr')
-    def expr_list(self, p):
-        return [p.expr]
+    def opt_expr(self, p):
+        return p.expr
 
     @_('empty')
     def opt_expr(self, p):
         return None
 
-    @_('expr')
-    def opt_expr(self, p):
-        return p.expr
+    # Lista de expresiones separadas por coma (para print y llamadas)
+    @_('expr_list')
+    def opt_expr_list(self, p):
+        return p.expr_list
 
-    # ── Nivel 0: expresión raíz ───────────────────────────────────────────────
+    @_('empty')
+    def opt_expr_list(self, p):
+        return []
+
+    @_("expr_list ',' expr")
+    def expr_list(self, p):
+        return p.expr_list + [p.expr]
+
+    @_('expr')
+    def expr_list(self, p):
+        return [p.expr]
+
+    # ── Nivel 1: asignación ───────────────────────────────────────────────────
 
     @_('expr1')
     def expr(self, p):
         return p.expr1
 
-    # ── Nivel 1: asignación ───────────────────────────────────────────────────
-
-    @_("lval '=' expr1")
+    # Asignaciones simples y compuestas
+    @_("ID '=' expr1")
     def expr1(self, p):
-        return _L(Assign(p.lval, p.expr1), p.lineno)
+        return _L(Assign(Identifier(p.ID), p.expr1), p.lineno)
+
+    @_("ID '[' expr ']' '=' expr1")
+    def expr1(self, p):
+        return _L(Assign(IndexExpr(p.ID, p.expr), p.expr1), p.lineno)
+
+    @_("ID ADDEQ expr1")
+    def expr1(self, p):
+        target = Identifier(p.ID)
+        return _L(Assign(target, BinOp('+', Identifier(p.ID), p.expr1)), p.lineno)
+
+    @_("ID SUBEQ expr1")
+    def expr1(self, p):
+        target = Identifier(p.ID)
+        return _L(Assign(target, BinOp('-', Identifier(p.ID), p.expr1)), p.lineno)
+
+    @_("ID MULEQ expr1")
+    def expr1(self, p):
+        target = Identifier(p.ID)
+        return _L(Assign(target, BinOp('*', Identifier(p.ID), p.expr1)), p.lineno)
+
+    @_("ID DIVEQ expr1")
+    def expr1(self, p):
+        target = Identifier(p.ID)
+        return _L(Assign(target, BinOp('/', Identifier(p.ID), p.expr1)), p.lineno)
+
+    @_("ID MODEQ expr1")
+    def expr1(self, p):
+        target = Identifier(p.ID)
+        return _L(Assign(target, BinOp('%', Identifier(p.ID), p.expr1)), p.lineno)
 
     @_('expr2')
     def expr1(self, p):
         return p.expr2
-
-    # ── LValues (lado izquierdo válido de una asignación) ─────────────────────
-
-    @_('ID')
-    def lval(self, p):
-        return _L(Identifier(p.ID), p.lineno)
-
-    @_("ID '[' expr ']'")
-    def lval(self, p):
-        return _L(IndexExpr(p.ID, p.expr), p.lineno)
 
     # ── Nivel 2: OR lógico ────────────────────────────────────────────────────
 
@@ -347,7 +365,7 @@ class Parser(sly.Parser):
 
     @_('expr4 LT expr5')
     def expr4(self, p):
-        return _L(BinOp('<',  p.expr4, p.expr5), p.lineno)
+        return _L(BinOp('<', p.expr4, p.expr5), p.lineno)
 
     @_('expr4 LE expr5')
     def expr4(self, p):
@@ -355,7 +373,7 @@ class Parser(sly.Parser):
 
     @_('expr4 GT expr5')
     def expr4(self, p):
-        return _L(BinOp('>',  p.expr4, p.expr5), p.lineno)
+        return _L(BinOp('>', p.expr4, p.expr5), p.lineno)
 
     @_('expr4 GE expr5')
     def expr4(self, p):
@@ -365,7 +383,7 @@ class Parser(sly.Parser):
     def expr4(self, p):
         return p.expr5
 
-    # ── Nivel 5: suma y resta ─────────────────────────────────────────────────
+    # ── Nivel 5: suma / resta ─────────────────────────────────────────────────
 
     @_("expr5 '+' expr6")
     def expr5(self, p):
@@ -379,7 +397,7 @@ class Parser(sly.Parser):
     def expr5(self, p):
         return p.expr6
 
-    # ── Nivel 6: multiplicación y división ───────────────────────────────────
+    # ── Nivel 6: multiplicación / división / módulo ───────────────────────────
 
     @_("expr6 '*' expr7")
     def expr6(self, p):
@@ -397,9 +415,9 @@ class Parser(sly.Parser):
     def expr6(self, p):
         return p.expr7
 
-    # ── Nivel 7: exponenciación ───────────────────────────────────────────────
+    # ── Nivel 7: exponenciación (asociatividad derecha) ───────────────────────
 
-    @_("expr7 '^' expr8")
+    @_("expr8 '^' expr7")
     def expr7(self, p):
         return _L(BinOp('^', p.expr7, p.expr8), p.lineno)
 
@@ -628,6 +646,363 @@ def print_ast(node, indent=0):
 
 
 # =============================================================================
+# VISUALIZACIÓN — Rich Tree
+# =============================================================================
+
+def _node_label(node):
+    """
+    Devuelve una etiqueta compacta y legible para un nodo del AST.
+    Los literales y nombres se muestran inline para mayor claridad.
+    """
+    cls = node.__class__.__name__
+
+    # Nodos con un valor escalar relevante que mostrar inline
+    if isinstance(node, (IntLiteral, FloatLiteral, CharLiteral,
+                          StringLiteral, BoolLiteral)):
+        return f"[bold cyan]{cls}[/bold cyan] [yellow]{node.value!r}[/yellow]"
+
+    if isinstance(node, Identifier):
+        return f"[bold green]Identifier[/bold green] [white]{node.name!r}[/white]"
+
+    if isinstance(node, SimpleType):
+        return f"[bold blue]SimpleType[/bold blue] [white]{node.name}[/white]"
+
+    if isinstance(node, BinOp):
+        return f"[bold magenta]BinOp[/bold magenta] [yellow]{node.op!r}[/yellow]"
+
+    if isinstance(node, UnaryOp):
+        return f"[bold magenta]UnaryOp[/bold magenta] [yellow]{node.op!r}[/yellow]"
+
+    if isinstance(node, (VarDecl, VarDeclInit, ConstDecl,
+                          ArrayDecl, ArrayDeclInit,
+                          FuncDecl, FuncDeclInit)):
+        name = getattr(node, 'name', '')
+        return f"[bold]{cls}[/bold] [green]{name!r}[/green]"
+
+    if isinstance(node, (CallExpr,)):
+        return f"[bold]{cls}[/bold] [green]{node.name!r}[/green]"
+
+    if isinstance(node, Param):
+        return f"[bold]{cls}[/bold] [green]{node.name!r}[/green]"
+
+    lineno_str = (f" [dim](l.{node.lineno})[/dim]"
+                  if getattr(node, 'lineno', None) else "")
+    return f"[bold]{cls}[/bold]{lineno_str}"
+
+
+def _build_rich_tree(node, tree=None):
+    """
+    Construye recursivamente un rich.tree.Tree a partir de un nodo del AST.
+    Si `tree` es None se crea la raíz; si se pasa, se añaden ramas al nodo dado.
+    """
+    from rich.tree import Tree
+
+    label = _node_label(node)
+    branch = Tree(label) if tree is None else tree.add(label)
+
+    # Iteramos sobre los campos del nodo (excepto 'lineno')
+    for field, value in node.__dict__.items():
+        if field == 'lineno':
+            continue
+
+        if isinstance(value, ASTNode):
+            # Campo que es otro nodo: lo expandimos
+            _build_rich_tree(value, branch)
+
+        elif isinstance(value, list):
+            # Lista de hijos: añadimos un sub-árbol etiquetado con el campo
+            if value:                           # omitimos listas vacías
+                list_branch = branch.add(f"[dim].{field}[/dim]")
+                for item in value:
+                    if isinstance(item, ASTNode):
+                        _build_rich_tree(item, list_branch)
+                    else:
+                        list_branch.add(f"[yellow]{item!r}[/yellow]")
+
+        else:
+            # Valor escalar: solo se muestra si no está ya en la etiqueta del nodo
+            _is_in_label = field in ('name', 'op', 'value') and (
+                isinstance(node, (Identifier, BinOp, UnaryOp,
+                                   IntLiteral, FloatLiteral, CharLiteral,
+                                   StringLiteral, BoolLiteral,
+                                   SimpleType, Param,
+                                   VarDecl, VarDeclInit, ConstDecl,
+                                   ArrayDecl, ArrayDeclInit,
+                                   FuncDecl, FuncDeclInit, CallExpr))
+            )
+            if not _is_in_label and value is not None:
+                branch.add(f"[dim].{field}[/dim] = [yellow]{value!r}[/yellow]")
+
+    return branch if tree is None else tree
+
+
+def show_rich_tree(ast):
+    """
+    Muestra el AST como árbol en la terminal usando Rich Tree.
+    Punto de entrada público para la visualización en consola.
+    """
+    from rich.console import Console
+    from rich.tree    import Tree
+
+    console = Console()
+    console.print()
+    console.rule("[bold]AST — Rich Tree[/bold]")
+
+    if ast is None:
+        console.print("[red]AST vacío (None)[/red]")
+        return
+
+    tree = _build_rich_tree(ast)
+    console.print(tree)
+    console.print()
+
+
+# =============================================================================
+# VISUALIZACIÓN — Graphviz
+# =============================================================================
+
+# =============================================================================
+# GRAPHVIZ — estilo fiel a la imagen de referencia
+#
+# Dos tipos de nodo:
+#   • Nodo AST  → rectángulo redondeado, relleno azul claro (#AED6F1), texto negro
+#   • Hoja escalar → óvalo blanco, borde negro, texto negro
+# Las aristas llevan el nombre del campo como etiqueta.
+# =============================================================================
+
+# Nombres cortos que se muestran en el nodo (sin prefijo de clase)
+_SHORT_NAMES = {
+    'FuncDeclInit': 'DeclInit',
+    'VarDeclInit':  'DeclInit',
+    'ArrayDeclInit':'DeclInit',
+    'FuncDecl':     'FuncDecl',
+    'VarDecl':      'VarDecl',
+    'ArrayDecl':    'ArrayDecl',
+    'ConstDecl':    'ConstDecl',
+    'FuncType':     'FuncType',
+    'ArrayType':    'ArrayType',
+    'ArrayTypeSized':'ArrayType',
+    'SimpleType':   'SimpleType',
+    'Param':        'Param',
+    'Block':        'Block',
+    'IfStmt':       'If',
+    'WhileStmt':    'While',
+    'ForStmt':      'For',
+    'PrintStmt':    'Print',
+    'ReturnStmt':   'Return',
+    'BreakStmt':    'Break',
+    'ContinueStmt': 'Continue',
+    'ExprStmt':     'ExprStmt',
+    'Assign':       'Assign',
+    'BinOp':        'BinOp',
+    'UnaryOp':      'UnaryOp',
+    'CallExpr':     'Call',
+    'IndexExpr':    'Index',
+    'Identifier':   'Name',
+    'IntLiteral':   'Literal',
+    'FloatLiteral': 'Literal',
+    'CharLiteral':  'Literal',
+    'StringLiteral':'Literal',
+    'BoolLiteral':  'Literal',
+    'Program':      'Program',
+    'DerefExpr':    'Deref',
+}
+
+# Campos escalares que cada clase expone como hojas
+# (todos los demás campos escalares se ignoran o ya son ASTNode/list)
+_SCALAR_FIELDS = {
+    'FuncDeclInit':  ['name'],
+    'VarDeclInit':   ['name'],
+    'ArrayDeclInit': ['name'],
+    'FuncDecl':      ['name'],
+    'VarDecl':       ['name'],
+    'ArrayDecl':     ['name'],
+    'ConstDecl':     ['name'],
+    'SimpleType':    ['name'],
+    'Param':         ['name'],
+    'Identifier':    ['name'],
+    'CallExpr':      ['name'],
+    'IndexExpr':     ['name'],
+    'BinOp':         ['op'],
+    'UnaryOp':       ['op'],
+    'IntLiteral':    ['value'],
+    'FloatLiteral':  ['value'],
+    'CharLiteral':   ['value'],
+    'StringLiteral': ['value'],
+    'BoolLiteral':   ['value'],
+}
+
+# Etiquetas amigables para los campos al mostrarse en aristas
+_FIELD_LABELS = {
+    'name':       'name',
+    'vartype':    'typ',
+    'arrtype':    'typ',
+    'functype':   'typ',
+    'paramtype':  'typ',
+    'elem_type':  'elem',
+    'ret_type':   'ret',
+    'params':     'params',
+    'value':      'value',
+    'body':       'body',
+    'stmts':      'stmts',
+    'decls':      'decls',
+    'exprs':      'values',
+    'args':       'args',
+    'elements':   'elems',
+    'cond':       'cond',
+    'then_branch':'then',
+    'else_branch':'else',
+    'init':       'init',
+    'update':     'update',
+    'target':     'target',
+    'left':       'left',
+    'right':      'right',
+    'operand':    'operand',
+    'index':      'index',
+    'size':       'size',
+    'op':         'op',
+}
+
+
+def _leaf(dot, text):
+    """Crea un nodo hoja (óvalo blanco) y devuelve su id."""
+    import uuid
+    nid = 'n' + str(uuid.uuid4()).replace('-', '')
+    # Escapar caracteres HTML especiales
+    safe = (str(text)
+            .replace('&', '&amp;')
+            .replace('<', '&lt;')
+            .replace('>', '&gt;')
+            .replace('"', '&quot;'))
+    dot.node(nid, label=safe,
+             shape='ellipse',
+             style='',
+             fillcolor='white',
+             fontcolor='black',
+             fontname='Helvetica',
+             fontsize='11',
+             color='black')
+    return nid
+
+
+def _ast_node(dot, label):
+    """Crea un nodo AST (rectángulo redondeado azul) y devuelve su id."""
+    import uuid
+    nid = 'n' + str(uuid.uuid4()).replace('-', '')
+    dot.node(nid, label=label,
+             shape='box',
+             style='filled,rounded',
+             fillcolor="#9EEBAF",
+             fontcolor='black',
+             fontname='Helvetica',
+             fontsize='11',
+             color="#1E5040",
+             margin='0.18,0.10')
+    return nid
+
+
+def _edge(dot, src, dst, label=''):
+    """Añade una arista con etiqueta de campo."""
+    dot.edge(src, dst,
+             label=label,
+             fontsize='9',
+             fontcolor='#424242',
+             color='black')
+
+
+def _build_graphviz(node, dot, parent_id=None, edge_label=''):
+    """
+    Recorre el AST y construye el grafo con el estilo de la imagen de referencia.
+    - Nodos AST: rectángulos redondeados azules con el nombre corto de la clase.
+    - Hojas escalares: óvalos blancos con el valor.
+    - Aristas: etiquetadas con el nombre del campo.
+    """
+    cls   = node.__class__.__name__
+    label = _SHORT_NAMES.get(cls, cls)
+    nid   = _ast_node(dot, label)
+
+    if parent_id is not None:
+        _edge(dot, parent_id, nid, edge_label)
+
+    # ── 1. Campos escalares propios de esta clase ─────────────────────────────
+    for field in _SCALAR_FIELDS.get(cls, []):
+        val = getattr(node, field, None)
+        if val is None:
+            continue
+        # Mostrar None explícito solo si es significativo (e.g. return sin valor)
+        leaf_id = _leaf(dot, val)
+        flabel  = _FIELD_LABELS.get(field, field)
+        _edge(dot, nid, leaf_id, flabel)
+
+    # ── 2. Campos estructurales (ASTNode o lista) ─────────────────────────────
+    skip = set(_SCALAR_FIELDS.get(cls, []))   # ya procesados arriba
+
+    for field, value in node.__dict__.items():
+        if field in ('lineno',) or field in skip:
+            continue
+
+        flabel = _FIELD_LABELS.get(field, field)
+
+        if isinstance(value, ASTNode):
+            _build_graphviz(value, dot, nid, flabel)
+
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, ASTNode):
+                    _build_graphviz(item, dot, nid, flabel)
+                # escalares sueltos en listas (raro, pero por si acaso)
+                elif item is not None:
+                    leaf_id = _leaf(dot, item)
+                    _edge(dot, nid, leaf_id, flabel)
+
+        elif value is None and field in ('else_branch', 'value',
+                                          'init', 'cond', 'update'):
+            # Mostrar None explícito solo para campos opcionales relevantes
+            leaf_id = _leaf(dot, 'None')
+            _edge(dot, nid, leaf_id, flabel)
+
+    return nid
+
+
+def save_graphviz(ast, output='ast', fmt='png', view=False):
+    """
+    Genera el grafo Graphviz del AST y lo guarda/renderiza.
+
+    Parámetros
+    ----------
+    ast    : nodo raíz del AST (Program)
+    output : nombre base del archivo de salida (sin extensión)
+    fmt    : formato de imagen: 'png', 'svg', 'pdf', etc.
+    view   : si True abre el archivo generado con el visor del SO
+    """
+    try:
+        from graphviz import Digraph
+    except ImportError:
+        rich.print("[red]graphviz no instalado. Ejecuta:  pip install graphviz[/red]")
+        return
+
+    dot = Digraph(name='AST', comment='Árbol de Sintaxis Abstracta — B-Minor')
+    dot.attr(
+        rankdir='TB',
+        bgcolor='white',
+        fontname='Helvetica',
+        splines='polyline',
+        nodesep='0.45',
+        ranksep='0.65',
+    )
+
+    if ast is None:
+        rich.print("[red]AST vacío (None) — no se genera el grafo.[/red]")
+        return
+
+    _build_graphviz(ast, dot)
+
+    out_path = dot.render(output, format=fmt, view=view, cleanup=True)
+    rich.print(f"[green]✔  Grafo Graphviz guardado en:[/green] [bold]{out_path}[/bold]")
+    return out_path
+
+
+# =============================================================================
 # FUNCIÓN DE PARSEO
 # =============================================================================
 
@@ -644,21 +1019,55 @@ def parse(txt):
 
 if __name__ == '__main__':
     import sys
+    import argparse
 
-    if len(sys.argv) != 2:
-        raise SystemExit("Uso: python parser.py <archivo.bminor>")
+    ap = argparse.ArgumentParser(
+        description='Parser B-Minor con visualización de AST',
+        epilog=(
+            'Ejemplos:\n'
+            '  python parser.py prog.bminor          # ambas visualizaciones\n'
+            '  python parser.py prog.bminor --rich   # solo Rich Tree\n'
+            '  python parser.py prog.bminor --gv     # solo Graphviz\n'
+            '  python parser.py prog.bminor --gv --gv-fmt svg --view'
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    ap.add_argument('filename',             help='Archivo fuente .bminor')
+    ap.add_argument('--rich',  action='store_true',
+                    help='Mostrar el AST como Rich Tree en consola')
+    ap.add_argument('--gv',    action='store_true',
+                    help='Generar el grafo Graphviz del AST')
+    ap.add_argument('--gv-out', default='ast',
+                    help='Nombre base del archivo Graphviz (default: ast)')
+    ap.add_argument('--gv-fmt', default='png',
+                    help='Formato Graphviz: png, svg, pdf… (default: png)')
+    ap.add_argument('--view',   action='store_true',
+                    help='Abrir el grafo generado con el visor del SO')
+    args = ap.parse_args()
 
-    filename = sys.argv[1]
+    # Si el usuario no especifica ningún modo, se activan ambos por defecto
+    run_rich = args.rich or (not args.rich and not args.gv)
+    run_gv   = args.gv   or (not args.rich and not args.gv)
+
     rich.print(f"\n{'='*60}")
-    rich.print(f"  Analizando: {filename}")
+    rich.print(f"  Analizando: {args.filename}")
     rich.print(f"{'='*60}\n")
 
-    txt = open(filename, encoding='utf-8').read()
+    txt = open(args.filename, encoding='utf-8').read()
     ast = parse(txt)
 
     if not errors_detected():
         rich.print("✔  Análisis sintáctico exitoso — sin errores.\n")
-        rich.print("── AST ──────────────────────────────────────────────────")
-        print_ast(ast)
+
+        # ── Visualización en consola (Rich Tree) ──────────────────────────────
+        if run_rich:
+            show_rich_tree(ast)
+
+        # ── Grafo Graphviz ────────────────────────────────────────────────────
+        if run_gv:
+            save_graphviz(ast,
+                          output=args.gv_out,
+                          fmt=args.gv_fmt,
+                          view=args.view)
     else:
         rich.print(f"\n✘  Se encontraron {errors_detected()} error(es) sintáctico(s).")
