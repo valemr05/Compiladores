@@ -1,0 +1,202 @@
+prog ::= decl_list 'EOF'
+
+/* Declarations */
+
+decl_list ::= /* epsilon */
+    | decl decl_list
+
+decl ::= 'ID' ':' type_simple ';'
+    | 'ID' ':' type_array_sized ';'
+    | 'ID' ':' type_func ';'
+    | decl_init
+    | class_decl /* nueva declaración */
+    
+
+decl_init ::= 'ID' ':' type_simple '=' expr ';'
+    | 'ID' ':' type_array_sized '=' '{' opt_expr_list '}' ';'
+    | 'ID' ':' type_func '=' '{' opt_stmt_list '}'
+
+/* Clases y Objetos */
+
+class_decl ::= 'CLASS' 'ID' '{' class_body '}'      /* declaración de una clase con nombre y cuerpo */
+
+class_body ::= /* epsilon */
+    | class_member class_body                       /* cuerpo como lista (posiblemente vacía) de miembros */
+
+class_member ::= decl                               /* reutilizo decl para campos y métodos ya existentes */
+
+/* --- Objetos: acceso y new --- */
+
+/* lval básico se deja igual para no romper nada */
+lval ::= 'ID'
+    | 'ID' index
+
+/* lval_obj extiende lval para permitir accesos con '.' encadenados, p.ej. p.x.y */
+lval_obj ::= lval_obj '.' 'ID'
+    | lval
+
+/* Statements */
+
+opt_stmt_list ::= /* epsilon */
+    | stmt_list
+
+stmt_list ::= stmt
+    | stmt stmt_list
+
+stmt ::= open_stmt
+    | closed_stmt
+
+closed_stmt ::= if_stmt_closed
+    | for_stmt_closed
+    | simple_stmt
+    | while_stmt_closed
+
+open_stmt ::= if_stmt_open
+    | for_stmt_open
+    | while_stmt_open  /* while abierto se maneja igual que if/for abiertos */
+
+
+if_cond ::= 'IF' '(' opt_expr ')'
+
+if_stmt_closed ::= if_cond closed_stmt 'ELSE' closed_stmt
+
+if_stmt_open ::= if_cond stmt
+    | if_cond closed_stmt 'ELSE' if_stmt_open
+
+for_header ::= 'FOR' '(' opt_expr ';' opt_expr ';' opt_expr ')'
+
+for_stmt_open ::= for_header open_stmt
+
+for_stmt_closed ::= for_header closed_stmt
+
+/* while usa la misma estructura de encabezado que if/for con opt_expr */
+
+while_stmt_closed ::= 'WHILE' '(' opt_expr ')' closed_stmt   /* versión con cuerpo "cerrado" */
+while_stmt_open   ::= 'WHILE' '(' opt_expr ')' open_stmt     /* versión "abierta" para anidamiento if/else */
+
+
+/* Simple statements are not recursive */
+simple_stmt ::= print_stmt
+    | return_stmt
+    | block_stmt
+    | decl
+    | expr ';'
+
+print_stmt ::= 'PRINT' opt_expr_list ';'
+
+return_stmt ::= 'RETURN' opt_expr ';'
+
+block_stmt ::= '{' stmt_list '}'
+
+/* Expressions */
+
+opt_expr_list ::= /* epsilon */
+    | expr_list
+
+expr_list ::= expr
+    | expr ',' expr_list
+
+opt_expr ::= /* epsilon */
+    | expr
+
+expr ::= expr_cond            /* expr ahora pasa por expr_cond para insertar el ternario */
+
+/* expr_cond introduce el operador ?: con asociatividad por la derecha */
+expr_cond ::= expr1 '?' expr ':' expr_cond
+    | expr1
+
+/* expr1: asignaciones simples y compuestas, sobre lval y lval_obj */
+expr1 ::= lval_obj '=' expr1                     
+    | lval_obj '+=' expr1        
+    | lval_obj '-=' expr1
+    | lval_obj '*=' expr1
+    | lval_obj '/=' expr1
+    | expr2
+
+expr2 ::= expr2 'LOR' expr3
+    | expr3
+
+expr3 ::= expr3 'LAND' expr4
+    | expr4
+
+expr4 ::= expr4 'EQ' expr5
+    | expr4 'NE' expr5
+    | expr4 'LT' expr5
+    | expr4 'LE' expr5
+    | expr4 'GT' expr5
+    | expr4 'GE' expr5
+    | expr5
+
+expr5 ::= expr5 '+' expr6
+    | expr5 '-' expr6
+    | expr6
+
+expr6 ::= expr6 '*' expr7
+    | expr6 '/' expr7
+    | expr6 '%' expr7
+    | expr7
+
+expr7 ::= expr7 '^' expr8
+    | expr8
+
+/* expr8 ahora incluye pre-incremento y pre-decremento */
+expr8 ::= 'INC' expr8                /* ++x con misma precedencia que -x y NOT */
+    | 'DEC' expr8                    /* --x */
+    | '-' expr8
+    | 'NOT' expr8
+    | expr9
+
+/* expr9 mantiene los post-incrementos/decrementos existentes */
+expr9 ::= expr9 'INC'
+    | expr9 'DEC'
+    | expr9 '.' 'ID'                          /* ← AGREGAR: Acceso a miembro */
+    | expr9 '.' 'ID' '(' opt_expr_list ')'    /* ← AGREGAR: Llamada a método */
+    | group
+
+group ::= '(' expr ')'
+    | 'ID' '(' opt_expr_list ')'
+    | 'ID' index
+    | factor
+    | 'NEW' 'ID' '(' opt_expr_list ')' /* construcción de objetos: NEW Clase(args) */
+
+index_list ::= index_list index
+		| index
+
+index ::= '[' expr ']'
+
+factor ::= 'ID'
+    | 'INTEGER_LITERAL'
+    | 'FLOAT_LITERAL'
+    | 'CHAR_LITERAL'
+    | 'STRING_LITERAL'
+    | 'TRUE'
+    | 'FALSE'
+
+/* Types */
+
+type_simple ::= 'INTEGER'
+    | 'FLOAT'
+    | 'BOOLEAN'
+    | 'CHAR'
+    | 'STRING'
+    | 'VOID'
+    | 'ID' 
+
+type_array ::= 'ARRAY' '[' ']' type_simple
+    | 'ARRAY' '[' ']' type_array
+
+type_array_sized ::= 'ARRAY' index type_simple
+    | 'ARRAY' index type_array_sized
+
+type_func ::= 'FUNCTION' type_simple '(' opt_param_list ')'
+    | 'FUNCTION' type_array_sized '(' opt_param_list ')'
+
+opt_param_list ::= /* epsilon */
+    | param_list
+
+param_list ::= param
+    | param_list ',' param
+
+param ::= 'ID' ':' type_simple
+    | 'ID' ':' type_array
+    | 'ID' ':' type_array_sized

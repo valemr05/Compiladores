@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="568" height="156" viewBox="0 0 568 156">
+<rect width="100%" height="100%" fill="#fafafa" rx="8" ry="8"/>
+<text x="30" y="18" font-family="Consolas, 'Courier New', monospace" font-size="14" font-weight="bold" fill="#222">if_stmt_open</text>
+<line x1="30.0" y1="68.0" x2="54.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="54,68 49,66 49,70" fill="#555"/>
+<line x1="514.0" y1="68.0" x2="538.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<circle cx="30" cy="68" r="5" fill="#555"/>
+<circle cx="538" cy="68" r="5" fill="#555" stroke="#555" stroke-width="2"/>
+<circle cx="538" cy="68" r="3" fill="#fafafa"/>
+<line x1="54.0" y1="68.0" x2="210.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<rect x="210" y="54" width="76" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="248.0" y="72.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">if_cond</text>
+<line x1="286.0" y1="68.0" x2="306.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="306,68 301,66 301,70" fill="#555"/>
+<rect x="306" y="54" width="52" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="332.0" y="72.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">stmt</text>
+<line x1="358.0" y1="68.0" x2="490.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<line x1="54.0" y1="68.0" x2="54.0" y2="98.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 54.0 98.0 Q 54.0 110.0 66.0 110.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="66.0" y1="110.0" x2="78.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<rect x="78" y="96" width="76" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="116.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">if_cond</text>
+<line x1="154.0" y1="110.0" x2="174.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="174,110 169,108 169,112" fill="#555"/>
+<rect x="174" y="96" width="108" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="228.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">closed_stmt</text>
+<line x1="282.0" y1="110.0" x2="302.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="302,110 297,108 297,112" fill="#555"/>
+<rect x="302" y="96" width="52" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="328.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">ELSE</text>
+<line x1="354.0" y1="110.0" x2="374.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="374,110 369,108 369,112" fill="#555"/>
+<rect x="374" y="96" width="116" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="432.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">if_stmt_open</text>
+<line x1="490.0" y1="110.0" x2="502.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 502.0 110.0 Q 514.0 110.0 514.0 122.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="514.0" y1="68.0" x2="514.0" y2="122.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="360,68 355,66 355,70" fill="#555"/>
+</svg>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="240" viewBox="0 0 346 240">
+<rect width="100%" height="100%" fill="#fafafa" rx="8" ry="8"/>
+<text x="30" y="18" font-family="Consolas, 'Courier New', monospace" font-size="14" font-weight="bold" fill="#222">expr6</text>
+<line x1="30.0" y1="68.0" x2="54.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="54,68 49,66 49,70" fill="#555"/>
+<line x1="292.0" y1="68.0" x2="316.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<circle cx="30" cy="68" r="5" fill="#555"/>
+<circle cx="316" cy="68" r="5" fill="#555" stroke="#555" stroke-width="2"/>
+<circle cx="316" cy="68" r="3" fill="#fafafa"/>
+<line x1="54.0" y1="68.0" x2="78.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<rect x="78" y="54" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="108.0" y="72.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr6</text>
+<line x1="138.0" y1="68.0" x2="158.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="158,68 153,66 153,70" fill="#555"/>
+<rect x="158" y="54" width="30" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="173.0" y="72.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">*</text>
+<line x1="188.0" y1="68.0" x2="208.0" y2="68.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="208,68 203,66 203,70" fill="#555"/>
+<rect x="208" y="54" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="238.0" y="72.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr7</text>
+<line x1="54.0" y1="68.0" x2="54.0" y2="98.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 54.0 98.0 Q 54.0 110.0 66.0 110.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="66.0" y1="110.0" x2="78.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<rect x="78" y="96" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="108.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr6</text>
+<line x1="138.0" y1="110.0" x2="158.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="158,110 153,108 153,112" fill="#555"/>
+<rect x="158" y="96" width="30" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="173.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">/</text>
+<line x1="188.0" y1="110.0" x2="208.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="208,110 203,108 203,112" fill="#555"/>
+<rect x="208" y="96" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="238.0" y="114.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr7</text>
+<line x1="268.0" y1="110.0" x2="280.0" y2="110.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 280.0 110.0 Q 292.0 110.0 292.0 122.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="292.0" y1="68.0" x2="292.0" y2="122.0" stroke="#555" stroke-width="1.5"/>
+<line x1="54.0" y1="68.0" x2="54.0" y2="140.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 54.0 140.0 Q 54.0 152.0 66.0 152.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="66.0" y1="152.0" x2="78.0" y2="152.0" stroke="#555" stroke-width="1.5"/>
+<rect x="78" y="138" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="108.0" y="156.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr6</text>
+<line x1="138.0" y1="152.0" x2="158.0" y2="152.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="158,152 153,150 153,154" fill="#555"/>
+<rect x="158" y="138" width="30" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="173.0" y="156.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">%</text>
+<line x1="188.0" y1="152.0" x2="208.0" y2="152.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="208,152 203,150 203,154" fill="#555"/>
+<rect x="208" y="138" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="238.0" y="156.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr7</text>
+<line x1="268.0" y1="152.0" x2="280.0" y2="152.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 280.0 152.0 Q 292.0 152.0 292.0 164.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="292.0" y1="68.0" x2="292.0" y2="164.0" stroke="#555" stroke-width="1.5"/>
+<line x1="54.0" y1="68.0" x2="54.0" y2="182.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 54.0 182.0 Q 54.0 194.0 66.0 194.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="66.0" y1="194.0" x2="143.0" y2="194.0" stroke="#555" stroke-width="1.5"/>
+<rect x="143" y="180" width="60" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="173.0" y="198.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">expr7</text>
+<line x1="203.0" y1="194.0" x2="280.0" y2="194.0" stroke="#555" stroke-width="1.5"/>
+<path d="M 280.0 194.0 Q 292.0 194.0 292.0 206.0" fill="none" stroke="#555" stroke-width="1.5"/>
+<line x1="292.0" y1="68.0" x2="292.0" y2="206.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="270,68 265,66 265,70" fill="#555"/>
+</svg>

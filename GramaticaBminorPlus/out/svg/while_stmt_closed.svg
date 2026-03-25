@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="90" viewBox="0 0 500 90">
+<rect width="100%" height="100%" fill="#fafafa" rx="8" ry="8"/>
+<text x="30" y="18" font-family="Consolas, 'Courier New', monospace" font-size="14" font-weight="bold" fill="#222">while_stmt_closed</text>
+<line x1="30.0" y1="56.0" x2="54.0" y2="56.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="54,56 49,54 49,58" fill="#555"/>
+<line x1="446.0" y1="56.0" x2="470.0" y2="56.0" stroke="#555" stroke-width="1.5"/>
+<circle cx="30" cy="56" r="5" fill="#555"/>
+<circle cx="470" cy="56" r="5" fill="#555" stroke="#555" stroke-width="2"/>
+<circle cx="470" cy="56" r="3" fill="#fafafa"/>
+<rect x="54" y="42" width="60" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="84.0" y="60.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">WHILE</text>
+<line x1="114.0" y1="56.0" x2="134.0" y2="56.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="134,56 129,54 129,58" fill="#555"/>
+<rect x="134" y="42" width="30" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="149.0" y="60.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">(</text>
+<line x1="164.0" y1="56.0" x2="184.0" y2="56.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="184,56 179,54 179,58" fill="#555"/>
+<rect x="184" y="42" width="84" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="226.0" y="60.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">opt_expr</text>
+<line x1="268.0" y1="56.0" x2="288.0" y2="56.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="288,56 283,54 283,58" fill="#555"/>
+<rect x="288" y="42" width="30" height="28" rx="5" ry="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="303.0" y="60.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#003366">)</text>
+<line x1="318.0" y1="56.0" x2="338.0" y2="56.0" stroke="#555" stroke-width="1.5"/>
+<polygon points="338,56 333,54 333,58" fill="#555"/>
+<rect x="338" y="42" width="108" height="28" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+<text x="392.0" y="60.0" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" font-style="italic" fill="#222222">closed_stmt</text>
+</svg>

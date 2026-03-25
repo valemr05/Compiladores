@@ -1,0 +1,21 @@
+/* Variable declarations */
+x: integer;
+y: integer = 123;
+f: float = 45.67;
+b: boolean = false;
+c: char    = 'q';
+s: string  = "hello bminor\n";
+a: array [x] integer;
+a: array [2] boolean = {true, false};
+a: array [2] array [x] boolean = {true, false};
+x: integer = 3;
+a: array [10] integer = { 1, 2, 3 };
+
+f: function integer (x: integer, y: integer) = {
+    if (x > 0) {
+        print x;
+    } else {
+        print 0;
+    }
+    return x;
+}

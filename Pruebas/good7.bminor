@@ -1,0 +1,8 @@
+x: integer;
+y: integer = 123;
+f: float = 45.67;
+b: boolean = false;
+c: char    = 'q';
+s: string  = "hello bminor\n";
+
+a: array [5] integer = {1,2,3,4,5};
