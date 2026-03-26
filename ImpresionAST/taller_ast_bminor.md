@@ -167,5 +167,8 @@ def main():
 ## 💡 Preguntas
 
 1.  ¿Qué elimina el AST del parse tree?\
+El AST elimina todos los símbolos o tokens que solo sirven para darle formato al código pero que no aportan lógica matemática o estructura. Como los puntos, los parentesis y las llaves, Este se queda unicamente con la operacion pura 
 2.  ¿Ventajas de Graphviz vs Rich?\
+Rich es excelente para depuración rápida porque imprime el árbol directamente en la terminal sin salir del entorno donde se este trabajando, pero en programas muy grandes se puede volver difícil de leer hacia abajo. Graphviz exporta una imagen 2D que permite ver relaciones jerárquicas complejas de forma visual con cajas y flechas, ideal para documentación, presentaciones o para analizar la estructura global de un programa grande de un solo vistazo se podria decir que es amigable con el usuario mientras Rich requiere mas nivel de abstraccion.
 3.  Uso del AST en semántica
+El AST es la estructura fundamental que usa la fase de Análisis Semántico para verificar el significado del código. Sobre el AST se hacen recorridos para construir la Tabla de Símbolos, comprobar que los tipos de datos coincidan por ejemplo que no se sume un string con un boolean, y verificar que las variables hayan sido declaradas antes de usarse, basicamente este verifica la logica del codigo proporcionado y corrobora que tenga relacioncon las reglas establecidas
