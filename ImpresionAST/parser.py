@@ -623,7 +623,7 @@ class Parser(sly.Parser):
                         ultimo_salto = self.source_code.rfind('\n', 0, p.index)
                         columna = p.index - ultimo_salto - 1 if ultimo_salto >= 0 else p.index
                         
-                        flecha = (" " * columna) + "▲"
+                        flecha = (" " * columna) + "^"
                         
                         mensaje += f"\n\n    {linea_error}\n    [bold yellow]{flecha}[/bold yellow]\n"
                 
