@@ -611,9 +611,26 @@ class Parser(sly.Parser):
     # =========================================================================
 
     def error(self, p):
-        lineno = p.lineno if p else 'EOF'
-        value  = repr(p.value) if p else 'EOF'
-        error(f'Error de sintaxis en {value}', lineno)
+            """Manejo de errores sintácticos con contexto visual."""
+            if p:
+                mensaje = f"Símbolo inesperado '{p.value}' (Categoría: {p.type}).\nLa gramática de B-Minor no permite un token de tipo {p.type} en esta posición."
+                
+                if hasattr(self, 'source_code'):
+                    lineas = self.source_code.splitlines()
+                    if 0 < p.lineno <= len(lineas):
+                        linea_error = lineas[p.lineno - 1]
+                        
+                        ultimo_salto = self.source_code.rfind('\n', 0, p.index)
+                        columna = p.index - ultimo_salto - 1 if ultimo_salto >= 0 else p.index
+                        
+                        flecha = (" " * columna) + "▲"
+                        
+                        mensaje += f"\n\n    {linea_error}\n    [bold yellow]{flecha}[/bold yellow]\n"
+                
+                error(mensaje, p.lineno)
+                
+            else:
+                error("Fin de archivo (EOF) inesperado. Revisa si olvidaste cerrar una llave '}' o un punto y coma ';'.")
 
 
 # =============================================================================
@@ -1010,6 +1027,7 @@ def parse(txt):
     """Recibe código fuente B-Minor y devuelve el AST."""
     l = Lexer()
     p = Parser()
+    p.source_code = txt
     return p.parse(l.tokenize(txt))
 
 
