@@ -1015,7 +1015,7 @@ def save_graphviz(ast, output='ast', fmt='png', view=False):
     _build_graphviz(ast, dot)
 
     out_path = dot.render(output, format=fmt, view=view, cleanup=True)
-    rich.print(f"[green]✔  Grafo Graphviz guardado en:[/green] [bold]{out_path}[/bold]")
+    rich.print(f"[green]  Grafo Graphviz guardado en:[/green] [bold]{out_path}[/bold]")
     return out_path
 
 
@@ -1075,7 +1075,7 @@ if __name__ == '__main__':
     ast = parse(txt)
 
     if not errors_detected():
-        rich.print("✔  Análisis sintáctico exitoso — sin errores.\n")
+        rich.print("  Análisis sintáctico exitoso — sin errores.\n")
 
         # ── Visualización en consola (Rich Tree) ──────────────────────────────
         if run_rich:
@@ -1088,4 +1088,4 @@ if __name__ == '__main__':
                           fmt=args.gv_fmt,
                           view=args.view)
     else:
-        rich.print(f"\n✘  Se encontraron {errors_detected()} error(es) sintáctico(s).")
+        rich.print(f"\n  Se encontraron {errors_detected()} error(es) sintáctico(s).")
