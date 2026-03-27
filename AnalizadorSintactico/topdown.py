@@ -1,3 +1,7 @@
+# NOTA: EN ESTE CASO NO HACE NADA, NO TENER EN CUENTA
+
+
+
 # topdown.py
 # Analizador Descendente Recursivo para B-Minor
 from __future__ import annotations
