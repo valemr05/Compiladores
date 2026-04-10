@@ -58,6 +58,7 @@ _bin_ops = {
 	('boolean', '||', 'boolean') : 'boolean',
 	('boolean', '==', 'boolean') : 'boolean',
 	('boolean', '!=', 'boolean') : 'boolean',
+	('boolean', '=', 'boolean')  : 'boolean',
 
 	# Char
 	('char', '=', 'char')  : 'char',
@@ -96,13 +97,38 @@ def loockup_type(name):
 	Para empezar, los tipos son solo nombres, pero mas adelante pueden ser
 	objetos mas avanzados.
 	'''
-	if name in typenames:
+	# Si es un string simple ('integer')
+	if isinstance(name, str) and name in typenames:
 		return name
-	else:
-		return None
+	
+	# Si es una tupla ('array', 'integer')
+	if isinstance(name, tuple) and len(name) == 2:
+		base_kind, sub_type = name
+		if base_kind == 'array' and lookup_type(sub_type) is not None:
+			return name
+			
+	return None
 		
 def check_binop(op, left_type, right_type):
 	return _bin_ops.get((left_type, op, right_type))
 
 def check_unaryop(op, operand_type):
 	return _unary_ops.get((op, operand_type))
+
+
+def is_compatible(expected_type, actual_type):
+	"""
+	
+	Maneja recursivamente tuplas y arrays.
+	"""
+	# Caso 1: Son exactamente iguales (ej. 'integer' == 'integer')
+	if expected_type == actual_type:
+		return True
+		
+	# Caso 2: Ambos son arreglos ('array', T1) vs ('array', T2)
+	if isinstance(expected_type, tuple) and isinstance(actual_type, tuple):
+		if expected_type[0] == 'array' and actual_type[0] == 'array':
+			# Llama a recursión para comparar lo que hay adentro (T1 vs T2)
+			return is_compatible(expected_type[1], actual_type[1])
+			
+	return False

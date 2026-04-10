@@ -1,4 +1,5 @@
 /* Function ending with semicolon */
+
 main: func integer() = {
     return 1;
 };
