@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 from multimethod import multimeta
 
-from symtab import Symtab
+from Compiladores.AnalizadorSemantico.symtab import Symtab
 from model import *
 
 	
