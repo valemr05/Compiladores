@@ -1,4 +1,3 @@
-# Entornos virtuales
-venv/
-env/
-.venv/
+**/venv/
+**/env/
+**/.venv/
