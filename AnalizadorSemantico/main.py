@@ -9,7 +9,8 @@
 import sys
 import os
 
-from errors import clear_errors, errors_detected
+from rich import print
+from errors import clear_errors, errors_detected, load_source
 from lexer   import Lexer
 from parser  import Parser
 from checker import Checker
@@ -27,6 +28,7 @@ def run_checker(filename: str) -> int:
     clear_errors()
 
     src = open(filename, encoding="utf-8").read()
+    load_source(src)
     lexer  = Lexer()
     parser = Parser()
 
@@ -44,15 +46,14 @@ def run_checker(filename: str) -> int:
 
     checker = Checker.check(ast)
 
-    if checker.ok():
-        print("semantic check: success")
+    if errors_detected() == 0:
+        print("\n[bold green]semantic check: success[/bold green]")
         return 0
     else:
-        for msg in checker.errors:
-            print(msg)
-        print("semantic check: failed")
+        # Ya no imprimimos los errores aquí con un 'for', porque 
+        # errors.py ya los imprimió hermosamente a medida que los encontraba.
+        print("\n[bold red]semantic check: failed[/bold red]")
         return 1
-
 
 def main():
     args = sys.argv[1:]

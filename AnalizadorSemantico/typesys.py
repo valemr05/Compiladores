@@ -118,6 +118,7 @@ def check_unaryop(op, operand_type):
 
 def is_compatible(expected_type, actual_type):
 	"""
+	Determina si el tipo actual es compatible con el tipo esperado. Esto es útil
 	
 	Maneja recursivamente tuplas y arrays.
 	"""

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import errors
+from platform import node
 from typing import Any, Optional
 from multimethod import multimeta
 
@@ -54,8 +56,13 @@ class Checker(Visitor):
     # Utilidades
     # -------------------------------------------------
     def error(self, node, message: str):
-        lineno = getattr(node, "lineno", "?")
-        self.errors.append(f"error:{lineno}: {message}")
+        lineno = getattr(node, "lineno", None)
+        
+        # 🟢 Llama a nuestra función mágica visual!
+        errors.error(message, lineno) 
+        
+        # Opcional: lo sigue guardando en su lista por si su código lo usa
+        self.errors.append(message)
 
     def ok(self) -> bool:
         return len(self.errors) == 0
