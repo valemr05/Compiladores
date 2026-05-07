@@ -1,0 +1,55 @@
+// prueba_ir.bminor
+// Archivo de prueba para el generador de IR.
+// Cubre: variables, aritmética, comparaciones, if, while, for, funciones.
+
+// ─── Variables globales ───────────────────────────────────────────────────────
+contador : integer = 0;
+PI       : constant = 3;
+
+// ─── Función auxiliar ─────────────────────────────────────────────────────────
+cuadrado : function integer (n : integer) = {
+    return n * n;
+}
+
+// ─── Función principal ────────────────────────────────────────────────────────
+main : function void () = {
+
+    // 1. Aritmética básica
+    x : integer = 2 + 3 * 4;
+    print x;
+
+    // 2. Comparación y if / else
+    if (x > 10) {
+        print x;
+    } else {
+        print 0;
+    }
+
+    // 3. While
+    i : integer = 0;
+    while (i < 5) {
+        print i;
+        i = i + 1;
+    }
+
+    // 4. For
+    for (i = 0; i < 3; i = i + 1) {
+        print i;
+    }
+
+    // 5. Llamada a función
+    r : integer = cuadrado(7);
+    print r;
+
+    // 6. Lógicos
+    a : boolean = true;
+    b : boolean = false;
+    c : boolean = a && b;
+    d : boolean = a || b;
+    print c;
+    print d;
+
+    // 7. Negación
+    e : boolean = !a;
+    print e;
+}
