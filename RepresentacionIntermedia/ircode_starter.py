@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from platform import node
 from typing import Optional
 from rich import print
 
@@ -438,37 +439,48 @@ class IRCodeGen(Visitor):
             self.emit("JUMP", self.loop_start_stack[-1])
  
     def visit_IfStmt(self, node: IfStmt):
+        # 1. Crear las etiquetas
+        l_then = self.new_label("Lthen")
         l_else = self.new_label("Lelse")
         l_end  = self.new_label("Lend")
- 
+
+       
         cond_reg = self.visit(node.cond)
-        self.emit("BZ", cond_reg, l_else)       # si falso → else
- 
+        
+        self.emit("CBRANCH", cond_reg, l_then, l_else)
+
+        self.emit("LABEL", l_then)
         self.visit(node.then_branch)
-        self.emit("JUMP", l_end)
- 
+        self.emit("BRANCH", l_end) # ESPECIFICACIÓN CORRECTA (No JUMP)
+
+        # 5. Bloque ELSE
         self.emit("LABEL", l_else)
         if node.else_branch is not None:
             self.visit(node.else_branch)
- 
+
+       
         self.emit("LABEL", l_end)
- 
+
     def visit_WhileStmt(self, node: WhileStmt):
         l_start = self.new_label("Lstart")
+        l_body  = self.new_label("Lbody")
         l_end   = self.new_label("Lend")
- 
+
         self.loop_start_stack.append(l_start)
         self.loop_end_stack.append(l_end)
- 
+
         self.emit("LABEL", l_start)
         cond_reg = self.visit(node.cond)
-        self.emit("BZ", cond_reg, l_end)        # si falso → salir
- 
+        
+        
+        self.emit("CBRANCH", cond_reg, l_body, l_end)
+
+        self.emit("LABEL", l_body)
         self.visit(node.body)
-        self.emit("JUMP", l_start)
- 
+        self.emit("BRANCH", l_start)
+
         self.emit("LABEL", l_end)
- 
+
         self.loop_start_stack.pop()
         self.loop_end_stack.pop()
  
@@ -541,16 +553,11 @@ class IRCodeGen(Visitor):
             return out
  
         # ── Comparaciones ─────────────────────────────────────
-        cmp_table = {
-            "==": "EQ", "!=": "NE",
-            "<":  "LT", "<=": "LE",
-            ">":  "GT", ">=": "GE",
-        }
+        cmp_table = {"==", "!=", "<", "<=", ">", ">="}
         if node.op in cmp_table:
             left_reg  = self.visit(node.left)
             right_reg = self.visit(node.right)
-            self.emit(self.cmp_opcode(left_ty), left_reg, right_reg)
-            self.emit(cmp_table[node.op], out)
+            self.emit(self.cmp_opcode(left_ty), node.op, left_reg, right_reg, out)
             return out
  
         # ── Lógico AND con cortocircuito ──────────────────────
@@ -610,20 +617,18 @@ class IRCodeGen(Visitor):
         raise NotImplementedError(f"UnaryOp no soportado: {node.op!r}")
  
     def visit_CallExpr(self, node: CallExpr):
-        # Evaluar cada argumento y emitir PARAM
+        arg_regs = []
         for arg in node.args:
-            reg = self.visit(arg)
-            self.emit("PARAM", reg)
- 
-        # Tipo de retorno
+            arg_regs.append(self.visit(arg))
+
         try:
             storage = self.lookup(node.name)
             ret_ty  = storage.ty
         except NameError:
             ret_ty = "integer"
- 
+
         out = self.new_temp()
-        self.emit("CALL", node.name, len(node.args), out)
+        self.emit("CALL", node.name, *arg_regs, out)
         return out
  
     def visit_Identifier(self, node: Identifier):
