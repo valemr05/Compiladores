@@ -18,7 +18,7 @@ from ircode_starter  import IRCodeGen
 
 def parse_and_check(filename: str):
     if not os.path.isfile(filename):
-        print(f"error: no se encontró el archivo '{filename}'")
+        print(f"[bold red]error:[/bold red] no se encontró el archivo '{filename}'")
         return None
 
     clear_errors()
@@ -31,11 +31,11 @@ def parse_and_check(filename: str):
     ast = parser.parse(lexer.tokenize(src))
 
     if errors_detected():
-        print("semantic check: failed (errores léxicos/sintácticos)")
+        print("[bold red]semantic check: failed[/bold red] (errores léxicos/sintácticos)")
         return None
 
     if ast is None:
-        print("error: el parser no produjo un AST.")
+        print("[bold red]error:[/bold red] el parser no produjo un AST.")
         return None
 
     Checker.check(ast)
@@ -63,7 +63,12 @@ def run_ir(filename: str) -> int:
     print("\n[bold green]semantic check: success[/bold green]")
     print("\n[bold cyan]# IR generado:[/bold cyan]\n")
 
-    ir = IRCodeGen.generate(ast)
+    # Asegúrate de usar la instanciación correcta según tu clase IRCodeGen
+    # Si 'generate' es un método normal, usa IRCodeGen().generate(ast)
+    # Si es un método de clase (@classmethod), usa IRCodeGen.generate(ast)
+    codegen = IRCodeGen() 
+    ir = codegen.generate(ast)
+    
     print(ir.format())
     return 0
 

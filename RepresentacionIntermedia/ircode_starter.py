@@ -486,32 +486,42 @@ class IRCodeGen(Visitor):
  
     def visit_ForStmt(self, node: ForStmt):
         l_start = self.new_label("Lstart")
+        l_body  = self.new_label("Lbody")
         l_end   = self.new_label("Lend")
- 
+
         self.loop_start_stack.append(l_start)
         self.loop_end_stack.append(l_end)
- 
+
         self.push_scope()
- 
+
+
         if node.init is not None:
             self.visit(node.init)
- 
+
+
         self.emit("LABEL", l_start)
- 
+
         if node.cond is not None:
             cond_reg = self.visit(node.cond)
-            self.emit("BZ", cond_reg, l_end)
- 
-        self.visit(node.body)
- 
+            self.emit("CBRANCH", cond_reg, l_body, l_end)
+        else:
+
+            self.emit("BRANCH", l_body) 
+
+        self.emit("LABEL", l_body)
+        if node.body is not None:
+            self.visit(node.body)
+
+
         if node.update is not None:
             self.visit(node.update)
- 
-        self.emit("JUMP", l_start)
+
+        self.emit("BRANCH", l_start)
+        
         self.emit("LABEL", l_end)
- 
+
         self.pop_scope()
- 
+
         self.loop_start_stack.pop()
         self.loop_end_stack.pop()
  
@@ -535,61 +545,94 @@ class IRCodeGen(Visitor):
         return src
  
     def visit_BinOp(self, node: BinOp):
-        left_ty  = self.infer_type(node.left)
-        out      = self.new_temp()
- 
-        # ── Aritmética ────────────────────────────────────────
-        if node.op in {"+", "-", "*", "/"}:
-            left_reg  = self.visit(node.left)
-            right_reg = self.visit(node.right)
-            self.emit(self.binary_arith_opcode(node.op, left_ty), left_reg, right_reg, out)
-            return out
- 
-        # ── Bitwise ───────────────────────────────────────────
-        if node.op in {"&", "|", "^"}:
-            left_reg  = self.visit(node.left)
-            right_reg = self.visit(node.right)
-            self.emit(self.binary_bit_opcode(node.op), left_reg, right_reg, out)
-            return out
- 
-        # ── Comparaciones ─────────────────────────────────────
-        cmp_table = {"==", "!=", "<", "<=", ">", ">="}
-        if node.op in cmp_table:
-            left_reg  = self.visit(node.left)
-            right_reg = self.visit(node.right)
-            self.emit(self.cmp_opcode(left_ty), node.op, left_reg, right_reg, out)
-            return out
- 
-        # ── Lógico AND con cortocircuito ──────────────────────
+        out = self.new_temp()
+
+        # ── Lógico AND (&&) con cortocircuito legal ──────────────────────
         if node.op == "&&":
             left_reg = self.visit(node.left)
-            l_false  = self.new_label("Lfalse")
-            l_end    = self.new_label("Lend")
-            self.emit("MOVI", 0, out)               # asumir falso
-            self.emit("BZ", left_reg, l_false)      # left falso → saltar
-            right_reg = self.visit(node.right)      # evaluar right solo si left fue true
-            self.emit("BZ", right_reg, l_false)
-            self.emit("MOVI", 1, out)
-            self.emit("JUMP", l_end)
+            l_check_right = self.new_label("LcheckR")
+            l_true  = self.new_label("Ltrue")
+            l_false = self.new_label("Lfalse")
+            l_end   = self.new_label("Lend")
+            
+            self.emit("MOVI", 0, out) # Asumimos FALSO
+            self.emit("CBRANCH", left_reg, l_check_right, l_false)
+            
+            self.emit("LABEL", l_check_right)
+            right_reg = self.visit(node.right)
+            self.emit("CBRANCH", right_reg, l_true, l_false)
+            
+            self.emit("LABEL", l_true)
+            self.emit("MOVI", 1, out) # ¡Éxito!
+            self.emit("BRANCH", l_end)
+            
             self.emit("LABEL", l_false)
             self.emit("LABEL", l_end)
             return out
- 
-        # ── Lógico OR con cortocircuito ───────────────────────
+
+        # ── Lógico OR (||) con cortocircuito legal ───────────────────────
         if node.op == "||":
             left_reg = self.visit(node.left)
-            l_true   = self.new_label("Ltrue")
-            l_end    = self.new_label("Lend")
-            self.emit("MOVI", 1, out)               # asumir verdadero
-            self.emit("BNZ", left_reg, l_true)      # left verdadero → saltar
-            right_reg = self.visit(node.right)      # evaluar right solo si left fue false
-            self.emit("BNZ", right_reg, l_true)
-            self.emit("MOVI", 0, out)
-            self.emit("JUMP", l_end)
+            l_check_right = self.new_label("LcheckR")
+            l_true  = self.new_label("Ltrue")
+            l_false = self.new_label("Lfalse")
+            l_end   = self.new_label("Lend")
+            
+            self.emit("MOVI", 1, out) # Asumimos VERDADERO
+            self.emit("CBRANCH", left_reg, l_true, l_check_right)
+            
+            self.emit("LABEL", l_check_right)
+            right_reg = self.visit(node.right)
+            self.emit("CBRANCH", right_reg, l_true, l_false)
+            
+            self.emit("LABEL", l_false)
+            self.emit("MOVI", 0, out) # ¡Fracaso!
+            self.emit("BRANCH", l_end)
+            
             self.emit("LABEL", l_true)
             self.emit("LABEL", l_end)
             return out
- 
+
+        # 
+        left_reg  = self.visit(node.left)
+        right_reg = self.visit(node.right)
+
+        # Extraemos los tipos inyectados por el Semantic Checker
+        left_ty  = getattr(node.left, "type", "integer")
+        right_ty = getattr(node.right, "type", "integer")
+
+        if left_ty == "integer" and right_ty == "float":
+            new_left_reg = self.new_temp()
+            self.emit("ITOF", left_reg, new_left_reg)
+            left_reg = new_left_reg
+            left_ty = "float"  # Ahora ambos son float
+            
+        elif left_ty == "float" and right_ty == "integer":
+            new_right_reg = self.new_temp()
+            self.emit("ITOF", right_reg, new_right_reg)
+            right_reg = new_right_reg
+            # right_ty = "float" (No lo reasignamos porque no se usa más abajo, pero lógicamente es float)
+            left_ty = "float"  # Obligamos a que el tipo dominante sea float para los opcodes
+
+        # ── Aritmética ───────────────────────────────────────────────────
+        if node.op in {"+", "-", "*", "/"}:
+            # Gracias al casteo, left_ty tendrá el tipo unificado correcto (integer o float)
+            # Esto llamará automáticamente a ADDI o ADDF
+            self.emit(self.binary_arith_opcode(node.op, left_ty), left_reg, right_reg, out)
+            return out
+
+        # ── Bitwise ──────────────────────────────────────────────────────
+        if node.op in {"&", "|", "^"}:
+            self.emit(self.binary_bit_opcode(node.op), left_reg, right_reg, out)
+            return out
+
+        # ── Comparaciones ────────────────────────────────────────────────
+        cmp_table = {"==", "!=", "<", "<=", ">", ">="}
+        if node.op in cmp_table:
+            # Gracias al casteo, usará CMPI o CMPF correctamente
+            self.emit(self.cmp_opcode(left_ty), node.op, left_reg, right_reg, out)
+            return out
+
         raise NotImplementedError(f"BinOp no soportado: {node.op!r}")
  
     def visit_UnaryOp(self, node: UnaryOp):
@@ -647,6 +690,18 @@ class IRCodeGen(Visitor):
  
     def visit_DerefExpr(self, node: DerefExpr):
         return self.visit(node.expr)
+
+    def visit_VarDeclInit(self, node: VarDeclInit):
+        is_float = getattr(node.vartype, "name", "integer") == "float"
+        alloc_op = "ALLOCF" if is_float else "ALLOCI"
+        
+        self.emit(alloc_op, node.name)
+        
+        # 2. Guardar el valor inicial si lo hay
+        if node.value is not None:
+            val_reg = self.visit(node.value)
+            store_op = "STOREF" if is_float else "STOREI"
+            self.emit(store_op, val_reg, node.name)
  
     # -------------------------------------------------
     # literals
