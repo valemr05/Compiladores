@@ -655,9 +655,18 @@ class IRCodeGen(Visitor):
         if node.op == "!":
             zero = self.new_temp()
             self.emit("MOVI", 0, zero)
-            self.emit(self.cmp_opcode(ty), operand, zero)
-            self.emit("EQ", out)    # out = 1 si operand == 0
-            return out
+
+            result = self.new_temp()
+
+            self.emit(
+                self.cmp_opcode(ty),
+                "==",
+                operand,
+                zero,
+                result
+            )
+
+            return result
  
         raise NotImplementedError(f"UnaryOp no soportado: {node.op!r}")
  
