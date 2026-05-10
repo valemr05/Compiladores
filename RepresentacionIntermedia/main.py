@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 # main.py
+
 import sys
 import os
 
 # DEBE IR AQUÍ ANTES DE CUALQUIER OTRO IMPORT
-# Fuerza a Python a buscar primero en la carpeta del proyecto
-# antes de buscar en los módulos built-in (como el 'parser' de Python 3.9)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from rich import print
-from errors  import clear_errors, errors_detected, load_source
-from lexer   import Lexer
-from parser  import Parser
+
+from errors import clear_errors, errors_detected, load_source
+from lexer import Lexer
+from parser import Parser
 from checker import Checker
-from ircode_starter  import IRCodeGen
+
+from ircode_starter import IRCodeGen
+from irinterp import IRInterpreter
 
 
 def parse_and_check(filename: str):
+
     if not os.path.isfile(filename):
         print(f"[bold red]error:[/bold red] no se encontró el archivo '{filename}'")
         return None
@@ -24,18 +27,28 @@ def parse_and_check(filename: str):
     clear_errors()
 
     src = open(filename, encoding="utf-8").read()
+
     load_source(src)
-    lexer  = Lexer()
+
+    lexer = Lexer()
     parser = Parser()
 
-    ast = parser.parse(lexer.tokenize(src))
+    ast = parser.parse(
+        lexer.tokenize(src)
+    )
 
     if errors_detected():
-        print("[bold red]semantic check: failed[/bold red] (errores léxicos/sintácticos)")
+        print(
+            "[bold red]semantic check: failed[/bold red] "
+            "(errores léxicos/sintácticos)"
+        )
         return None
 
     if ast is None:
-        print("[bold red]error:[/bold red] el parser no produjo un AST.")
+        print(
+            "[bold red]error:[/bold red] "
+            "el parser no produjo un AST."
+        )
         return None
 
     Checker.check(ast)
@@ -48,32 +61,53 @@ def parse_and_check(filename: str):
 
 
 def run_checker(filename: str) -> int:
+
     ast = parse_and_check(filename)
+
     if ast is None:
         return 1
+
     print("\n[bold green]semantic check: success[/bold green]")
+
     return 0
 
 
 def run_ir(filename: str) -> int:
+
     ast = parse_and_check(filename)
+
     if ast is None:
         return 1
 
     print("\n[bold green]semantic check: success[/bold green]")
     print("\n[bold cyan]# IR generado:[/bold cyan]\n")
 
-    # Asegúrate de usar la instanciación correcta según tu clase IRCodeGen
-    # Si 'generate' es un método normal, usa IRCodeGen().generate(ast)
-    # Si es un método de clase (@classmethod), usa IRCodeGen.generate(ast)
-    codegen = IRCodeGen() 
+    codegen = IRCodeGen()
+
     ir = codegen.generate(ast)
-    
+
     print(ir.format())
+
+    print("\n[bold cyan]# Ejecutando IR[/bold cyan]\n")
+
+    interp = IRInterpreter(ir)
+
+    try:
+
+        result = interp.run("main")
+
+        print("\n[bold green]Programa terminado[/bold green]")
+        print(f"[bold yellow]Return:[/bold yellow] {result}")
+
+    except Exception as e:
+
+        print(f"\n[bold red]Runtime Error:[/bold red] {e}")
+
     return 0
 
 
 def main():
+
     args = sys.argv[1:]
 
     if len(args) == 2 and args[0] == "checker":
