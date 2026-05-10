@@ -292,11 +292,13 @@ class IRCodeGen(Visitor):
 
     def visit_VarDecl(self, node: VarDecl):
         ty = self.type_from_vartype(node.vartype)
-        if self.current_function is None:
-            self.emit(self.var_opcode(ty), node.name)
-            return
-        self.bind(Storage(node.name, ty))
-        self.emit(self.alloc_opcode(ty), node.name)
+        
+        if self.current_function is not None:
+            self.bind(Storage(node.name, ty))
+            
+        # 3. Emitir instrucción de reserva de memoria
+        alloc_op = "ALLOCF" if ty == "float" else "ALLOCI"
+        self.emit(alloc_op, node.name)
  
     def visit_VarDeclInit(self, node: VarDeclInit):
         ty = self.type_from_vartype(node.vartype)
@@ -675,10 +677,32 @@ class IRCodeGen(Visitor):
         return out
  
     def visit_Identifier(self, node: Identifier):
+        # Buscamos la variable en la memoria para saber su tipo
         storage = self.lookup(node.name)
-        tmp = self.new_temp()
-        self.emit(self.load_opcode(storage.ty), storage.name, tmp)
-        return tmp
+        out = self.new_temp()
+        
+        # Leemos dependiendo de si es flotante o entero
+        load_op = "LOADF" if storage.ty == "float" else "LOADI"
+        self.emit(load_op, storage.name, out)
+        
+        return out
+
+    def visit_Assign(self, node: Assign):
+        src = self.visit(node.value)
+        
+        if isinstance(node.target, Identifier):
+            storage = self.lookup(node.target.name)
+            store_op = "STOREF" if storage.ty == "float" else "STOREI"
+            self.emit(store_op, src, storage.name)
+            
+        elif isinstance(node.target, IndexExpr):
+            # Para arreglos (si ya lo tienes, déjalo igual)
+            idx_reg = self.visit(node.target.index)
+            storage = self.lookup(node.target.name)
+            elem_ty = storage.ty.replace("array[]", "") if "array[]" in storage.ty else storage.ty
+            self.emit(f"STORE{self.type_suffix(elem_ty)}IDX", src, storage.name, idx_reg)
+            
+        return src
  
     def visit_IndexExpr(self, node: IndexExpr):
         storage = self.lookup(node.name)
@@ -692,15 +716,17 @@ class IRCodeGen(Visitor):
         return self.visit(node.expr)
 
     def visit_VarDeclInit(self, node: VarDeclInit):
-        is_float = getattr(node.vartype, "name", "integer") == "float"
-        alloc_op = "ALLOCF" if is_float else "ALLOCI"
+        ty = self.type_from_vartype(node.vartype)
         
+        if self.current_function is not None:
+            self.bind(Storage(node.name, ty))
+            
+        alloc_op = "ALLOCF" if ty == "float" else "ALLOCI"
         self.emit(alloc_op, node.name)
         
-        # 2. Guardar el valor inicial si lo hay
         if node.value is not None:
             val_reg = self.visit(node.value)
-            store_op = "STOREF" if is_float else "STOREI"
+            store_op = "STOREF" if ty == "float" else "STOREI"
             self.emit(store_op, val_reg, node.name)
  
     # -------------------------------------------------
