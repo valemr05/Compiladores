@@ -1,0 +1,12 @@
+nums : array[5] integer = {1,2,3,4,5};
+
+main : function void() = {
+
+    x : integer = nums[2];
+
+    print x;
+
+    nums[1] = 99;
+
+    print nums[1];
+}

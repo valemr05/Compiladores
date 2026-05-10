@@ -1,0 +1,197 @@
+/* =========================================================
+   TEST COMPLETO BMINOR
+========================================================= */
+
+PI : constant = 3;
+
+globalCounter : integer = 0;
+
+numbers : array[5] integer = {1,2,3,4,5};
+
+square : function integer(x: integer) = {
+
+    return x * x;
+}
+
+sumArray : function integer(arr: array[] integer, size: integer) = {
+
+    i : integer = 0;
+    total : integer = 0;
+
+    while(i < size) {
+
+        total = total + arr[i];
+
+        i = i + 1;
+    }
+
+    return total;
+}
+
+main : function integer() = {
+
+    print 111;
+
+    /* =========================================
+       Variables básicas
+    ========================================= */
+
+    a : integer = 10;
+    b : integer = 20;
+
+    print a;
+    print b;
+
+    c : integer = a + b * 2;
+
+    print c;
+
+    /* =========================================
+       Comparaciones
+    ========================================= */
+
+    if(a < b) {
+        print 1;
+    }
+    else {
+        print 0;
+    }
+
+    if(a == 10) {
+        print 2;
+    }
+
+    if(b != 10) {
+        print 3;
+    }
+
+    /* =========================================
+       Booleanos
+    ========================================= */
+
+    t : boolean = true;
+    f : boolean = false;
+
+    if(t && !f) {
+        print 4;
+    }
+
+    /* =========================================
+       While
+    ========================================= */
+
+    i : integer = 0;
+
+    while(i < 5) {
+
+        print i;
+
+        i = i + 1;
+    }
+
+    /* =========================================
+       For
+    ========================================= */
+
+    j : integer = 0;
+
+    for(j = 0; j < 5; j = j + 1) {
+
+        print j;
+    }
+
+    /* =========================================
+       Break / Continue
+    ========================================= */
+
+    k : integer = 0;
+
+    while(k < 10) {
+
+        k = k + 1;
+
+        if(k == 3) {
+            continue;
+        }
+
+        if(k == 7) {
+            break;
+        }
+
+        print k;
+    }
+
+    /* =========================================
+       Funciones
+    ========================================= */
+
+    sq : integer = square(5);
+
+    print sq;
+
+    /* =========================================
+       Arrays
+    ========================================= */
+
+    print numbers[0];
+    print numbers[1];
+    print numbers[2];
+
+    numbers[1] = 99;
+
+    print numbers[1];
+
+    idx : integer = 3;
+
+    print numbers[idx];
+
+    /* =========================================
+       Arrays + loops
+    ========================================= */
+
+    total : integer = sumArray(numbers, 5);
+
+    print total;
+
+    /* =========================================
+       Operaciones normales
+    ========================================= */
+
+    z : integer = 10;
+
+    z = z + 5;
+    print z;
+
+    z = z - 3;
+    print z;
+
+    z = z * 2;
+    print z;
+
+    z = z / 4;
+    print z;
+
+    /* =========================================
+       Incrementos manuales
+    ========================================= */
+
+    n : integer = 1;
+
+    n = n + 1;
+    print n;
+
+    n = n - 1;
+    print n;
+
+    n = n + 1;
+    print n;
+
+    n = n - 1;
+    print n;
+
+    /* =========================================
+       Retorno
+    ========================================= */
+
+    return 999;
+}
